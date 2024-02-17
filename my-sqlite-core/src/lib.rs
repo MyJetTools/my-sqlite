@@ -23,3 +23,7 @@ pub use sql_lite_connection_builder::*;
 mod crate_table;
 mod error;
 pub use error::*;
+mod group_by_fields;
+pub use group_by_fields::*;
+mod count_result;
+pub use count_result::*;

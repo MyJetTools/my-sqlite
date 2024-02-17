@@ -1,11 +1,11 @@
-use async_sqlite::Client;
+use async_sqlite::{rusqlite::types::FromSql, Client};
 
 use crate::{
     sql::{SelectBuilder, SqlValues, UsedColumns},
     sql_insert::SqlInsertModel,
     sql_select::SelectEntity,
     sql_where::SqlWhereModel,
-    DbRow, SqlLiteError,
+    CountResult, DbRow, SqlLiteError,
 };
 
 pub struct SqlLiteConnection {
@@ -164,5 +164,45 @@ impl SqlLiteConnection {
         let value = result?;
 
         Ok(Some(value))
+    }
+
+    pub async fn get_count<
+        TWhereModel: SqlWhereModel,
+        TResult: CountResult + FromSql + Send + Sync + 'static,
+    >(
+        &self,
+        table_name: &str,
+        where_model: Option<&TWhereModel>,
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> Result<Option<TResult>, SqlLiteError> {
+        let mut sql = String::new();
+
+        let mut sql_values = SqlValues::new();
+        sql.push_str("SELECT COUNT(*)::");
+        sql.push_str(TResult::get_postgres_type());
+
+        sql.push_str(" FROM ");
+        sql.push_str(table_name);
+
+        if let Some(where_model) = where_model {
+            if where_model.has_conditions() {
+                sql.push_str(" WHERE ");
+                where_model.fill_where_component(&mut sql, &mut sql_values);
+            }
+
+            where_model.fill_limit_and_offset(&mut sql);
+        }
+
+        let result = self
+            .client
+            .conn(move |conn| {
+                conn.query_row_and_then(&sql, sql_values.get_params_to_invoke().as_slice(), |row| {
+                    let result = row.get(0)?;
+                    Ok(result)
+                })
+            })
+            .await?;
+
+        Ok(result)
     }
 }
