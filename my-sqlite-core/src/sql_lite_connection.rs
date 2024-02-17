@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use async_sqlite::{rusqlite::types::FromSql, Client};
 
 use crate::{
@@ -29,15 +31,25 @@ impl SqlLiteConnection {
         #[cfg(test)]
         println!("Sql: {}", sql_data.sql);
 
+        let sql_data = Arc::new(sql_data);
+
+        let sql_data_spawned = sql_data.clone();
+
         let result = self
             .client
             .conn(move |conn| {
                 conn.execute(
-                    &sql_data.sql,
-                    sql_data.values.get_params_to_invoke().as_slice(),
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
                 )
             })
-            .await?;
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        let result = result?;
 
         Ok(result)
     }
@@ -53,19 +65,27 @@ impl SqlLiteConnection {
         }
 
         let used_columns = entities[0].get_insert_columns_list();
-        let sql_data = crate::sql::build_bulk_insert_sql(entities, table_name, &used_columns);
+        let sql_data = Arc::new(crate::sql::build_bulk_insert_sql(
+            entities,
+            table_name,
+            &used_columns,
+        ));
 
-        #[cfg(test)]
-        println!("Sql: {}", sql_data.sql);
+        let sql_data_spawned = sql_data.clone();
 
-        self.client
+        let result = self
+            .client
             .conn(move |conn| {
                 conn.execute(
-                    &sql_data.sql,
-                    sql_data.values.get_params_to_invoke().as_slice(),
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
                 )
             })
-            .await?;
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
 
         Ok(())
     }
@@ -89,10 +109,14 @@ impl SqlLiteConnection {
 
         select_builder.build_select_sql(&mut sql, &mut sql_values, table_name, where_model);
 
-        let value = self
+        let sql = Arc::new(sql);
+
+        let sql_spawned = sql.clone();
+
+        let result = self
             .client
             .conn(move |conn| {
-                let mut stmt = conn.prepare(&sql)?;
+                let mut stmt = conn.prepare(&sql_spawned)?;
 
                 let response =
                     stmt.query_map(sql_values.get_params_to_invoke().as_slice(), |row| {
@@ -110,9 +134,13 @@ impl SqlLiteConnection {
 
                 Ok(result)
             })
-            .await?;
+            .await;
 
-        Ok(value)
+        if result.is_err() {
+            println!("Sql: {}", sql.as_str());
+        }
+
+        Ok(result?)
     }
 
     pub async fn query_single_row<
@@ -137,14 +165,21 @@ impl SqlLiteConnection {
 
         select_builder.build_select_sql(&mut sql, &mut sql_values, table_name, where_model);
 
+        let sql = Arc::new(sql);
+        let sql_spawned = sql.clone();
+
         let result = self
             .client
             .conn(move |conn| {
-                conn.query_row_and_then(&sql, sql_values.get_params_to_invoke().as_slice(), |row| {
-                    let db_row = DbRow::new(row, &select_fields);
-                    TEntity::from(&db_row);
-                    Ok(TEntity::from(&db_row))
-                })
+                conn.query_row_and_then(
+                    &sql_spawned,
+                    sql_values.get_params_to_invoke().as_slice(),
+                    |row| {
+                        let db_row = DbRow::new(row, &select_fields);
+                        TEntity::from(&db_row);
+                        Ok(TEntity::from(&db_row))
+                    },
+                )
             })
             .await;
 
@@ -159,6 +194,8 @@ impl SqlLiteConnection {
                 },
                 _ => {}
             }
+
+            println!("Sql: {}", sql.as_str());
         }
 
         let value = result?;
@@ -193,16 +230,28 @@ impl SqlLiteConnection {
             where_model.fill_limit_and_offset(&mut sql);
         }
 
+        let sql = Arc::new(sql);
+
+        let sql_spawned = sql.clone();
+
         let result = self
             .client
             .conn(move |conn| {
-                conn.query_row_and_then(&sql, sql_values.get_params_to_invoke().as_slice(), |row| {
-                    let result = row.get(0)?;
-                    Ok(result)
-                })
+                conn.query_row_and_then(
+                    &sql_spawned,
+                    sql_values.get_params_to_invoke().as_slice(),
+                    |row| {
+                        let result = row.get(0)?;
+                        Ok(result)
+                    },
+                )
             })
-            .await?;
+            .await;
 
-        Ok(result)
+        if result.is_err() {
+            println!("Sql: {}", sql.as_str());
+        }
+
+        Ok(result?)
     }
 }
