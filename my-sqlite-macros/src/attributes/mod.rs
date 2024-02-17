@@ -17,6 +17,7 @@ pub use ignore_if_none::*;
 mod default_value;
 mod enum_case;
 pub use default_value::*;
+pub use enum_case::*;
 mod json;
 pub use json::*;
 mod line_no;

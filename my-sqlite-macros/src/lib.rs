@@ -1,4 +1,5 @@
 mod attributes;
+mod db_enum;
 mod fn_impl_insert;
 mod fn_impl_select;
 mod fn_impl_update;
@@ -8,6 +9,7 @@ mod struct_ext;
 mod struct_schema;
 mod table_schema;
 mod where_fields;
+mod where_value_provider;
 
 use proc_macro::TokenStream;
 
@@ -129,6 +131,15 @@ pub fn insert_db_entity(input: TokenStream) -> TokenStream {
 pub fn where_db_model(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     match crate::fn_impl_where_model::generate(&ast) {
+        Ok(result) => result,
+        Err(err) => err.to_compile_error().into(),
+    }
+}
+
+#[proc_macro_derive(DbEnumAsString, attributes(enum_case, default_if_null, default_value,))]
+pub fn db_enum_as_string(input: TokenStream) -> TokenStream {
+    let ast = syn::parse(input).unwrap();
+    match crate::db_enum::generate_as_string(&ast) {
         Ok(result) => result,
         Err(err) => err.to_compile_error().into(),
     }
