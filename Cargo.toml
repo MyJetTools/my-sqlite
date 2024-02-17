@@ -1,0 +1,2 @@
+[workspace]
+members = ["my-sqlite-core", "my-sqlite", "my-sqlite-macros", "my-sqlite-tests"]
