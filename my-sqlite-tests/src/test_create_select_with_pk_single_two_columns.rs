@@ -1,9 +1,13 @@
 use my_sqlite::macros::*;
 
 #[derive(SelectDbEntity, InsertDbEntity, UpdateDbEntity, TableSchema)]
-pub struct TestEntity {
+struct TestEntity {
+    #[primary_key]
     #[generate_where_model(name:"WhereByIdModel")]
     pub id: i32,
+    #[primary_key]
+    #[generate_where_model(name:"WhereByIdModel")]
+    pub id2: i32,
     pub name: String,
 }
 
@@ -11,7 +15,7 @@ pub struct TestEntity {
 mod tests {
     use my_sqlite::{sql_where::NoneWhereModel, SqlLiteConnectionBuilder};
 
-    use crate::test_create_select::*;
+    use super::*;
 
     #[tokio::test]
     async fn test_generate_and_select() {
@@ -24,6 +28,7 @@ mod tests {
 
         let src_entity = TestEntity {
             id: 2,
+            id2: 2,
             name: "test".to_string(),
         };
 
@@ -32,7 +37,7 @@ mod tests {
             .await
             .unwrap();
 
-        let where_model = WhereByIdModel { id: 2 };
+        let where_model = WhereByIdModel { id: 2, id2: 2 };
 
         let result: Option<TestEntity> = connection
             .query_single_row(TABLE_NAME, Some(&where_model))
@@ -57,16 +62,65 @@ mod tests {
         let to_insert = vec![
             TestEntity {
                 id: 2,
+                id2: 2,
                 name: "test".to_string(),
             },
             TestEntity {
                 id: 3,
+                id2: 3,
                 name: "test2".to_string(),
             },
         ];
 
         connection
             .bulk_insert_db_entities(&to_insert, TABLE_NAME)
+            .await
+            .unwrap();
+
+        let result: Vec<TestEntity> = connection
+            .query_rows(TABLE_NAME, Some(&NoneWhereModel))
+            .await
+            .unwrap();
+
+        assert_eq!(2, result.len());
+    }
+
+    #[tokio::test]
+    async fn test_bulk_insert_or_skip() {
+        const TABLE_NAME: &str = "test_table";
+        let connection = SqlLiteConnectionBuilder::new(":memory:")
+            .create_table_if_no_exists::<TestEntity>(TABLE_NAME)
+            .build()
+            .await
+            .unwrap();
+
+        connection
+            .insert_db_entity(
+                &TestEntity {
+                    id: 2,
+                    id2: 2,
+                    name: "test_before".to_string(),
+                },
+                TABLE_NAME,
+            )
+            .await
+            .unwrap();
+
+        let to_insert = [
+            TestEntity {
+                id: 2,
+                id2: 2,
+                name: "test".to_string(),
+            },
+            TestEntity {
+                id: 3,
+                id2: 3,
+                name: "test2".to_string(),
+            },
+        ];
+
+        connection
+            .bulk_insert_or_ignore_db_entities(&to_insert, TABLE_NAME)
             .await
             .unwrap();
 

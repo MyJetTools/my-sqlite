@@ -26,7 +26,7 @@ impl SqlLiteConnection {
         #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
     ) -> Result<usize, SqlLiteError> {
         let sql_data =
-            crate::sql::build_insert_sql(entity, table_name, &mut UsedColumns::as_none());
+            crate::sql::build_insert_sql(false, entity, table_name, &mut UsedColumns::as_none());
 
         #[cfg(test)]
         println!("Sql: {}", sql_data.sql);
@@ -54,6 +54,36 @@ impl SqlLiteConnection {
         Ok(result)
     }
 
+    pub async fn insert_db_entity_if_not_exists<TEntity: SqlInsertModel>(
+        &self,
+        entity: &TEntity,
+        table_name: &str,
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> Result<usize, SqlLiteError> {
+        let sql_data =
+            crate::sql::build_insert_sql(true, entity, table_name, &mut UsedColumns::as_none());
+
+        let sql_data = Arc::new(sql_data);
+
+        let sql_data_spawned = sql_data.clone();
+
+        let result = self
+            .client
+            .conn(move |conn| {
+                conn.execute(
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
+                )
+            })
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        Ok(result?)
+    }
+
     pub async fn bulk_insert_db_entities<TEntity: SqlInsertModel>(
         &self,
         entities: &[TEntity],
@@ -66,6 +96,44 @@ impl SqlLiteConnection {
 
         let used_columns = entities[0].get_insert_columns_list();
         let sql_data = Arc::new(crate::sql::build_bulk_insert_sql(
+            false,
+            entities,
+            table_name,
+            &used_columns,
+        ));
+
+        let sql_data_spawned = sql_data.clone();
+
+        let result = self
+            .client
+            .conn(move |conn| {
+                conn.execute(
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
+                )
+            })
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        Ok(())
+    }
+
+    pub async fn bulk_insert_or_ignore_db_entities<TEntity: SqlInsertModel>(
+        &self,
+        entities: &[TEntity],
+        table_name: &str,
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> Result<(), SqlLiteError> {
+        if entities.len() == 0 {
+            panic!("Attempt to bulk_insert_db_entities 0 entities");
+        }
+
+        let used_columns = entities[0].get_insert_columns_list();
+        let sql_data = Arc::new(crate::sql::build_bulk_insert_sql(
+            true,
             entities,
             table_name,
             &used_columns,

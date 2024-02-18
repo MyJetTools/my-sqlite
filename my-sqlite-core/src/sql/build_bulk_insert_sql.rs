@@ -3,6 +3,7 @@ use crate::sql_insert::SqlInsertModel;
 use super::{SqlData, SqlValues, UsedColumns};
 
 pub fn build_bulk_insert_sql<TSqlInsertModel: SqlInsertModel>(
+    or_ignore: bool,
     models: &[TSqlInsertModel],
     table_name: &str,
     used_columns: &UsedColumns,
@@ -13,7 +14,12 @@ pub fn build_bulk_insert_sql<TSqlInsertModel: SqlInsertModel>(
 
     let mut result = String::new();
 
-    result.push_str("INSERT INTO ");
+    if or_ignore {
+        result.push_str("INSERT OR IGNORE INTO ");
+    } else {
+        result.push_str("INSERT INTO ");
+    }
+
     result.push_str(table_name);
 
     TSqlInsertModel::generate_insert_fields(&mut result, used_columns);

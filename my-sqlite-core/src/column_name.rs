@@ -24,6 +24,10 @@ impl ColumnName {
         }
     }
 
+    pub fn get_name(&self) -> &str {
+        self.name.as_str()
+    }
+
     pub fn to_string(&self) -> String {
         let mut result = String::new();
         self.push_name(&mut result);

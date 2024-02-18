@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use async_sqlite::{ClientBuilder, JournalMode};
 use rust_extensions::StrOrString;
 
@@ -32,10 +34,20 @@ impl SqlLiteConnectionBuilder {
         let result = SqlLiteConnection::new(client).await;
 
         if let Some(create_table_sql) = self.create_table_sql {
-            let _ = result
+            let create_table_sql = Arc::new(create_table_sql);
+
+            let create_table_sql_spawned = create_table_sql.clone();
+
+            let result = result
                 .client
-                .conn(move |connection| connection.execute(create_table_sql.as_str(), []))
+                .conn(move |connection| connection.execute(create_table_sql_spawned.as_str(), []))
                 .await;
+
+            if let Err(err) = result {
+                println!("Sql:{}", create_table_sql.as_str());
+
+                panic!("{:?}", err);
+            }
         }
 
         Ok(result)
