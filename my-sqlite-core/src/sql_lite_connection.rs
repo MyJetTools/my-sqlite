@@ -121,7 +121,7 @@ impl SqlLiteConnection {
         Ok(())
     }
 
-    pub async fn bulk_insert_or_ignore_db_entities<TEntity: SqlInsertModel>(
+    pub async fn bulk_insert_db_entities_if_not_exists<TEntity: SqlInsertModel>(
         &self,
         entities: &[TEntity],
         table_name: &str,
