@@ -53,7 +53,8 @@ impl SqlUpdateValueProvider for DateTimeAsMicroseconds {
                 }
 
                 if sql_type == "timestamp" {
-                    return SqlUpdateValue::StringValue(self.to_rfc3339().into());
+                    let value = &self.to_rfc3339()[..26];
+                    return SqlUpdateValue::StringValue(value.to_string().into());
                 }
 
                 panic!("Unknown sql type: {}", sql_type);
