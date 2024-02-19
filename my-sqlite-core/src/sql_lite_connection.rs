@@ -28,8 +28,9 @@ impl SqlLiteConnection {
         let sql_data =
             crate::sql::build_insert_sql(false, entity, table_name, &mut UsedColumns::as_none());
 
-        #[cfg(test)]
-        println!("Sql: {}", sql_data.sql);
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
 
         let sql_data = Arc::new(sql_data);
 
@@ -67,6 +68,10 @@ impl SqlLiteConnection {
 
         let sql_data_spawned = sql_data.clone();
 
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
         let result = self
             .client
             .conn(move |conn| {
@@ -101,6 +106,10 @@ impl SqlLiteConnection {
             table_name,
             &used_columns,
         ));
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
 
         let sql_data_spawned = sql_data.clone();
 
@@ -138,6 +147,10 @@ impl SqlLiteConnection {
             table_name,
             &used_columns,
         ));
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
 
         let sql_data_spawned = sql_data.clone();
 
@@ -178,6 +191,10 @@ impl SqlLiteConnection {
         select_builder.build_select_sql(&mut sql, &mut sql_values, table_name, where_model);
 
         let sql = Arc::new(sql);
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql);
+        }
 
         let sql_spawned = sql.clone();
 
@@ -234,6 +251,11 @@ impl SqlLiteConnection {
         select_builder.build_select_sql(&mut sql, &mut sql_values, table_name, where_model);
 
         let sql = Arc::new(sql);
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql);
+        }
+
         let sql_spawned = sql.clone();
 
         let result = self
@@ -288,6 +310,10 @@ impl SqlLiteConnection {
 
         sql.push_str(" FROM ");
         sql.push_str(table_name);
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql);
+        }
 
         if let Some(where_model) = where_model {
             if where_model.has_conditions() {
