@@ -219,8 +219,23 @@ impl<'s> FromDbRow<'s, DateTimeAsMicroseconds> for DateTimeAsMicroseconds {
     fn from_db_row(
         row: &crate::DbRow,
         name: &str,
-        _metadata: &Option<SqlValueMetadata>,
+        metadata: &Option<SqlValueMetadata>,
     ) -> DateTimeAsMicroseconds {
+        if let Some(metadata) = metadata {
+            if let Some(sql_type) = metadata.sql_type {
+                if sql_type == "timestamp" {
+                    let value: String = row.get(name);
+                    let result = DateTimeAsMicroseconds::from_str(value.as_str());
+
+                    if result.is_none() {
+                        panic!("Field: {}. Can not convert timestamp value '{}' into DateTimeAsMicrosecond", name, value);
+                    }
+
+                    return result.unwrap();
+                }
+            }
+        }
+
         let unix_microseconds: i64 = row.get(name);
         DateTimeAsMicroseconds::new(unix_microseconds)
     }

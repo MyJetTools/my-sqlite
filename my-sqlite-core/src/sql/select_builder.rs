@@ -233,9 +233,9 @@ pub fn fill_select_fields(sql: &mut String, items: &[SelectFieldValue]) {
                 sql.push('"');
             }
             SelectFieldValue::DateTimeAsTimestamp(field_name) => {
-                sql.push_str("(extract(EPOCH FROM ");
+                sql.push_str("cast(");
                 sql.push_str(field_name);
-                sql.push_str(") * 1000000)::bigint as \"");
+                sql.push_str(" as text) as \"");
                 sql.push_str(field_name);
                 sql.push('"');
             }
