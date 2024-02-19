@@ -227,8 +227,9 @@ pub fn fill_select_fields(sql: &mut String, items: &[SelectFieldValue]) {
                 sql.push_str(field_name);
             }
             SelectFieldValue::Json(field_name) => {
+                sql.push_str("cast(");
                 sql.push_str(field_name);
-                sql.push_str(" #>> '{}' as \"");
+                sql.push_str(" as text) as \"");
                 sql.push_str(field_name);
                 sql.push('"');
             }

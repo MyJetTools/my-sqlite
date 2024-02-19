@@ -186,12 +186,6 @@ impl<T: Serialize> SqlUpdateValueProvider for Vec<T> {
         let as_string = serde_json::to_string(self).unwrap();
         let index = params.push(as_string.into());
         SqlUpdateValue::Json(index)
-
-        /*
-        sql.push_str("cast($");
-        sql.push_str(params.len().to_string().as_str());
-        sql.push_str("::text as json)");
-         */
     }
 }
 

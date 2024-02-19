@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use my_sqlite::macros::*;
 use rust_extensions::date_time::DateTimeAsMicroseconds;
 
@@ -8,6 +10,8 @@ struct TestEntity {
     pub id: i32,
     #[sql_type("timestamp")]
     pub moment: DateTimeAsMicroseconds,
+    #[sql_type("jsonb")]
+    pub json_field: BTreeMap<String, String>,
 }
 
 #[cfg(test)]
@@ -26,9 +30,13 @@ mod tests {
             .await
             .unwrap();
 
+        let mut json_field = BTreeMap::new();
+        json_field.insert("key1".to_string(), "value1".to_string());
+
         let src_entity = TestEntity {
             id: 2,
             moment: DateTimeAsMicroseconds::from_str("2021-01-02T03:04:05.123456").unwrap(),
+            json_field,
         };
 
         connection
@@ -50,5 +58,7 @@ mod tests {
             result.moment.unix_microseconds,
             src_entity.moment.unix_microseconds
         );
+
+        assert_eq!(result.json_field, src_entity.json_field);
     }
 }

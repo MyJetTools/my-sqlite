@@ -73,9 +73,8 @@ impl SqlUpdateValue {
                 sql.push_str(value.as_str());
             }
             SqlUpdateValue::Json(index) => {
-                sql.push_str("cast($");
+                sql.push_str("$");
                 sql.push_str(index.to_string().as_str());
-                sql.push_str("::text as json)");
             }
         }
     }
