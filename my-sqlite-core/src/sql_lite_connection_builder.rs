@@ -61,11 +61,11 @@ impl SqlLiteConnectionBuilder {
                                     skip_error = true;
                                 }
                             }
-                            _ => todo!(),
+                            _ => {}
                         },
-                        _ => todo!(),
+                        _ => {}
                     },
-                    _ => todo!(),
+                    _ => {}
                 }
 
                 if !skip_error {

@@ -26,8 +26,12 @@ impl SqlLiteConnection {
         table_name: &str,
         #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
     ) -> Result<usize, SqlLiteError> {
-        let sql_data =
-            crate::sql::build_insert_sql(false, entity, table_name, &mut UsedColumns::as_none());
+        let sql_data = crate::sql::build_insert_sql(
+            crate::sql::InsertType::JustInsert,
+            entity,
+            table_name,
+            &mut UsedColumns::as_none(),
+        );
 
         if std::env::var("DEBUG").is_ok() {
             println!("Sql: {}", sql_data.sql);
@@ -62,8 +66,12 @@ impl SqlLiteConnection {
         table_name: &str,
         #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
     ) -> Result<usize, SqlLiteError> {
-        let sql_data =
-            crate::sql::build_insert_sql(true, entity, table_name, &mut UsedColumns::as_none());
+        let sql_data = crate::sql::build_insert_sql(
+            crate::sql::InsertType::OrIgnore,
+            entity,
+            table_name,
+            &mut UsedColumns::as_none(),
+        );
 
         let sql_data = Arc::new(sql_data);
 
@@ -102,7 +110,7 @@ impl SqlLiteConnection {
 
         let used_columns = entities[0].get_insert_columns_list();
         let sql_data = Arc::new(crate::sql::build_bulk_insert_sql(
-            false,
+            crate::sql::InsertType::JustInsert,
             entities,
             table_name,
             &used_columns,
@@ -131,12 +139,10 @@ impl SqlLiteConnection {
         Ok(())
     }
 
-    pub async fn bulk_insert_or_update_db_entity<'s, TEntity: SqlInsertModel + SqlUpdateModel>(
+    pub async fn bulk_insert_or_update<'s, TEntity: SqlInsertModel + SqlUpdateModel>(
         &self,
-        table_name: &str,
-
         entities: &[TEntity],
-
+        table_name: &str,
         #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
     ) -> Result<(), SqlLiteError> {
         let sql_data = crate::sql::build_bulk_insert_or_update_sql(table_name, entities);
@@ -178,7 +184,7 @@ impl SqlLiteConnection {
 
         let used_columns = entities[0].get_insert_columns_list();
         let sql_data = Arc::new(crate::sql::build_bulk_insert_sql(
-            true,
+            crate::sql::InsertType::OrIgnore,
             entities,
             table_name,
             &used_columns,

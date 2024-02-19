@@ -2,8 +2,24 @@ use crate::sql_insert::SqlInsertModel;
 
 use super::{SqlData, SqlValues, UsedColumns};
 
+pub enum InsertType {
+    JustInsert,
+    OrIgnore,
+    OrReplace,
+}
+
+impl InsertType {
+    pub fn push(&self, sql: &mut String) {
+        match self {
+            InsertType::JustInsert => sql.push_str("INSERT INTO "),
+            InsertType::OrIgnore => sql.push_str("INSERT OR IGNORE INTO "),
+            InsertType::OrReplace => sql.push_str("INSERT OR REPLACE INTO "),
+        }
+    }
+}
+
 pub fn build_bulk_insert_sql<TSqlInsertModel: SqlInsertModel>(
-    or_ignore: bool,
+    insert_type: InsertType,
     models: &[TSqlInsertModel],
     table_name: &str,
     used_columns: &UsedColumns,
@@ -14,11 +30,7 @@ pub fn build_bulk_insert_sql<TSqlInsertModel: SqlInsertModel>(
 
     let mut result = String::new();
 
-    if or_ignore {
-        result.push_str("INSERT OR IGNORE INTO ");
-    } else {
-        result.push_str("INSERT INTO ");
-    }
+    insert_type.push(&mut result);
 
     result.push_str(table_name);
 

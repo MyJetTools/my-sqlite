@@ -122,4 +122,48 @@ mod tests {
 
         assert_eq!(2, result.len());
     }
+
+    #[tokio::test]
+    async fn test_bulk_insert_or_update() {
+        const TABLE_NAME: &str = "test_table";
+        let connection = SqlLiteConnectionBuilder::new(":memory:")
+            .create_table_if_no_exists::<TestEntity>(TABLE_NAME)
+            .build()
+            .await
+            .unwrap();
+
+        connection
+            .insert_db_entity(
+                &TestEntity {
+                    id: 2,
+                    name: "test_before".to_string(),
+                },
+                TABLE_NAME,
+            )
+            .await
+            .unwrap();
+
+        let to_insert = [
+            TestEntity {
+                id: 2,
+                name: "test".to_string(),
+            },
+            TestEntity {
+                id: 3,
+                name: "test2".to_string(),
+            },
+        ];
+
+        connection
+            .bulk_insert_or_update(&to_insert, TABLE_NAME)
+            .await
+            .unwrap();
+
+        let result: Vec<TestEntity> = connection
+            .query_rows(TABLE_NAME, Some(&NoneWhereModel))
+            .await
+            .unwrap();
+
+        assert_eq!(2, result.len());
+    }
 }

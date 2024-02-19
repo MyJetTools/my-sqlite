@@ -1,9 +1,9 @@
 use crate::sql_insert::SqlInsertModel;
 
-use super::{SqlData, SqlValues, UsedColumns};
+use super::{InsertType, SqlData, SqlValues, UsedColumns};
 
 pub fn build_insert_sql<TInsertSql: SqlInsertModel>(
-    or_ignore: bool,
+    insert_type: InsertType,
     model: &TInsertSql,
     table_name: &str,
     upsert_columns_to_fill: &mut UsedColumns,
@@ -12,11 +12,7 @@ pub fn build_insert_sql<TInsertSql: SqlInsertModel>(
 
     let mut values = SqlValues::new();
 
-    if or_ignore {
-        sql.push_str("INSERT OR IGNORE INTO ");
-    } else {
-        sql.push_str("INSERT INTO ");
-    }
+    insert_type.push(&mut sql);
 
     sql.push_str(table_name);
 
