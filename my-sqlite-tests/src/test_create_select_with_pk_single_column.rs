@@ -111,7 +111,7 @@ mod tests {
         ];
 
         connection
-            .bulk_insert_or_ignore_db_entities(&to_insert, TABLE_NAME)
+            .bulk_insert_db_entities_if_not_exists(&to_insert, TABLE_NAME)
             .await
             .unwrap();
 

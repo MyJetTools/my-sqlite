@@ -43,10 +43,34 @@ impl SqlLiteConnectionBuilder {
                 .conn(move |connection| connection.execute(create_table_sql_spawned.as_str(), []))
                 .await;
 
-            if let Err(err) = result {
+            if let Err(err) = &result {
                 println!("Sql:{}", create_table_sql.as_str());
+                let mut skip_error = false;
 
-                panic!("{:?}", err);
+                match err {
+                    async_sqlite::Error::Rusqlite(err) => match err {
+                        async_sqlite::rusqlite::Error::SqlInputError {
+                            error,
+                            msg: _,
+                            sql: _,
+                            offset: _,
+                        } => match error.code {
+                            async_sqlite::rusqlite::ErrorCode::Unknown => {
+                                if error.extended_code == 1 {
+                                    //Imperially this error means that the table already exists.
+                                    skip_error = true;
+                                }
+                            }
+                            _ => todo!(),
+                        },
+                        _ => todo!(),
+                    },
+                    _ => todo!(),
+                }
+
+                if !skip_error {
+                    panic!("{:?}", err);
+                }
             }
         }
 
