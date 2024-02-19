@@ -6,6 +6,7 @@ use crate::{
     sql::{SelectBuilder, SqlValues, UsedColumns},
     sql_insert::SqlInsertModel,
     sql_select::SelectEntity,
+    sql_update::SqlUpdateModel,
     sql_where::SqlWhereModel,
     CountResult, DbRow, SqlLiteError,
 };
@@ -110,6 +111,41 @@ impl SqlLiteConnection {
         if std::env::var("DEBUG").is_ok() {
             println!("Sql: {}", sql_data.sql);
         }
+
+        let sql_data_spawned = sql_data.clone();
+
+        let result = self
+            .client
+            .conn(move |conn| {
+                conn.execute(
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
+                )
+            })
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        Ok(())
+    }
+
+    pub async fn bulk_insert_or_update_db_entity<'s, TEntity: SqlInsertModel + SqlUpdateModel>(
+        &self,
+        table_name: &str,
+
+        entities: &[TEntity],
+
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> Result<(), SqlLiteError> {
+        let sql_data = crate::sql::build_bulk_insert_or_update_sql(table_name, entities);
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        let sql_data = Arc::new(sql_data);
 
         let sql_data_spawned = sql_data.clone();
 
