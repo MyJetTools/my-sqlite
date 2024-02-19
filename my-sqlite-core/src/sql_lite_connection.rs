@@ -348,4 +348,38 @@ impl SqlLiteConnection {
 
         Ok(result?)
     }
+
+    pub async fn delete_db_entity<TWhereModel: SqlWhereModel>(
+        &self,
+        table_name: &str,
+        where_model: &TWhereModel,
+
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> Result<(), SqlLiteError> {
+        let sql_data = where_model.build_delete_sql(table_name);
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        let sql_data = Arc::new(sql_data);
+
+        let sql_data_spawned = sql_data.clone();
+
+        let result = self
+            .client
+            .conn(move |conn| {
+                conn.execute(
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
+                )
+            })
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        Ok(())
+    }
 }
