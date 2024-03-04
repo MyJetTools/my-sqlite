@@ -98,6 +98,39 @@ impl SqlLiteConnection {
         Ok(result?)
     }
 
+    pub async fn insert_or_update_db_entity<'s, TEntity: SqlInsertModel + SqlUpdateModel>(
+        &self,
+        table_name: &str,
+        entity: &TEntity,
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> Result<usize, SqlLiteError> {
+        let sql_data = crate::sql::build_insert_or_update_sql(entity, table_name);
+
+        let sql_data = Arc::new(sql_data);
+
+        let sql_data_spawned = sql_data.clone();
+
+        if std::env::var("DEBUG").is_ok() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        let result = self
+            .client
+            .conn(move |conn| {
+                conn.execute(
+                    &sql_data_spawned.sql,
+                    sql_data_spawned.values.get_params_to_invoke().as_slice(),
+                )
+            })
+            .await;
+
+        if result.is_err() {
+            println!("Sql: {}", sql_data.sql);
+        }
+
+        Ok(result?)
+    }
+
     pub async fn bulk_insert_db_entities<TEntity: SqlInsertModel>(
         &self,
         entities: &[TEntity],
