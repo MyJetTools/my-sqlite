@@ -45,7 +45,10 @@ impl SqlLiteConnectionBuilder {
                 .await;
 
             if let Err(err) = &result {
-                println!("Sql:{}", create_table_sql.as_str());
+                if std::env::var("DEBUG").is_ok() {
+                    println!("Sql:{}", create_table_sql.as_str());
+                }
+
                 let mut skip_error = false;
 
                 match err {
