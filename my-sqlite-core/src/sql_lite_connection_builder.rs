@@ -7,19 +7,20 @@ use crate::{table_schema::TableSchemaProvider, SqlLiteConnection, SqlLiteError};
 
 pub struct SqlLiteConnectionBuilder {
     path: StrOrString<'static>,
-    create_table_sql: Option<String>,
+    create_table_sql: Vec<String>,
 }
 
 impl SqlLiteConnectionBuilder {
     pub fn new(path: impl Into<StrOrString<'static>>) -> Self {
         Self {
             path: path.into(),
-            create_table_sql: None,
+            create_table_sql: Vec::with_capacity(4),
         }
     }
 
     pub fn create_table_if_no_exists<T: TableSchemaProvider>(mut self, table_name: &str) -> Self {
-        self.create_table_sql = Some(crate::crate_table::generate_sql_request::<T>(table_name));
+        self.create_table_sql
+            .push(crate::crate_table::generate_sql_request::<T>(table_name));
         self
     }
 
@@ -33,7 +34,7 @@ impl SqlLiteConnectionBuilder {
 
         let result = SqlLiteConnection::new(client).await;
 
-        if let Some(create_table_sql) = self.create_table_sql {
+        for create_table_sql in self.create_table_sql {
             let create_table_sql = Arc::new(create_table_sql);
 
             let create_table_sql_spawned = create_table_sql.clone();
