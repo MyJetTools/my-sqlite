@@ -51,8 +51,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         let result = result?;
@@ -91,8 +94,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         Ok(result?)
@@ -124,8 +130,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         Ok(result?)
@@ -165,8 +174,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         Ok(())
@@ -198,8 +210,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         Ok(())
@@ -239,8 +254,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         Ok(())
@@ -296,8 +314,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql.as_str());
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql);
+            }
         }
 
         Ok(result?)
@@ -417,8 +438,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql.as_str());
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql);
+            }
         }
 
         Ok(result?)
@@ -451,8 +475,11 @@ impl SqlLiteConnection {
             })
             .await;
 
-        if result.is_err() {
-            println!("Sql: {}", sql_data.sql);
+        if let Err(err) = &result {
+            println!("Err: {}", err);
+            if std::env::var("DEBUG").is_ok() {
+                println!("Sql: {}", sql_data.sql);
+            }
         }
 
         Ok(())
