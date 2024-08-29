@@ -15,7 +15,12 @@ pub fn render_where_value_provider(
                 #body
             }
 
+            fn render_value(&self) -> bool {
+             true
+            }
+
         }
+
     }
 }
 
