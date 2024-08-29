@@ -6,6 +6,7 @@ mod fn_impl_update;
 mod fn_impl_where_model;
 mod impl_json_model;
 mod impl_json_where_model;
+mod impl_where_raw_model;
 mod render_impl;
 mod struct_ext;
 mod struct_schema;
@@ -355,6 +356,20 @@ pub fn db_json_model(input: TokenStream) -> TokenStream {
 pub fn db_json_where_model(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     let result = crate::impl_json_where_model::generate(&ast);
+
+    match result {
+        Ok(result) => {
+            #[cfg(feature = "debug-table-schema")]
+            println!("{}", result);
+            result.into()
+        }
+        Err(e) => e.into_compile_error().into(),
+    }
+}
+
+#[proc_macro_attribute]
+pub fn where_raw_model(attr: TokenStream, input: TokenStream) -> TokenStream {
+    let result = crate::impl_where_raw_model::generate_where_raw_model(attr, input);
 
     match result {
         Ok(result) => {
