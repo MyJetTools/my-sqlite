@@ -23,9 +23,15 @@ impl<'s> WhereFields<'s> {
             if struct_prop.name == "limit" && struct_prop.ty.is_usize()  {
                 limit = Some(struct_prop);
             } else
+         
              if struct_prop.attrs.has_attr("offset") {
                 offset = Some(struct_prop);
-            } else {
+            }
+            else 
+            if struct_prop.name == "offset" && struct_prop.ty.is_usize()  {
+                offset = Some(struct_prop);
+            }
+            else {
                 other_fields.push(struct_prop);
             }
         }
