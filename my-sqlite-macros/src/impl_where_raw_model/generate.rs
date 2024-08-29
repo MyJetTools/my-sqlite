@@ -64,7 +64,7 @@ pub fn generate_where_raw_model<'s>(
                 if has_conditions.len() > 0 {
                     has_conditions.push(quote::quote! { && });
                 } else {
-                    has_conditions.push(quote::quote! { use my_postgres::SqlWhereValueProvider; });
+                    has_conditions.push(quote::quote! { use my_sqlite::SqlWhereValueProvider; });
                 }
                 has_conditions.push(quote::quote! {
                     self.#name.render_value()
@@ -84,7 +84,7 @@ pub fn generate_where_raw_model<'s>(
         &type_name,
         {
             quote::quote! {
-                use my_postgres::SqlWhereValueProvider;
+                use my_sqlite::SqlWhereValueProvider;
                 #(#content_to_render)*
             }
         },
