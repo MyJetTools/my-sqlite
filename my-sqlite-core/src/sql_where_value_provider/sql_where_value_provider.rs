@@ -14,6 +14,8 @@ pub trait SqlWhereValueProvider {
         params: &mut crate::sql::SqlValues,
         metadata: &Option<SqlValueMetadata>,
     ) -> bool;
+
+    fn render_value(&self) -> bool;
 }
 
 impl SqlWhereValueProvider for String {
@@ -31,6 +33,10 @@ impl SqlWhereValueProvider for String {
         let index = params.push(self.into());
         sql.push('$');
         sql.push_str(index.to_string().as_str());
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -51,6 +57,9 @@ impl<'s> SqlWhereValueProvider for &'s str {
         sql.push('$');
         sql.push_str(index.to_string().as_str());
 
+        true
+    }
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -88,6 +97,10 @@ impl SqlWhereValueProvider for DateTimeAsMicroseconds {
 
         panic!("DateTimeAsMicroseconds requires sql_type");
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for bool {
@@ -109,6 +122,10 @@ impl SqlWhereValueProvider for bool {
 
         true
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for u8 {
@@ -124,6 +141,10 @@ impl SqlWhereValueProvider for u8 {
         }
         sql.push_str(self.to_string().as_str());
 
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -143,6 +164,10 @@ impl SqlWhereValueProvider for i8 {
 
         true
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for u16 {
@@ -158,6 +183,10 @@ impl SqlWhereValueProvider for u16 {
         }
         sql.push_str(self.to_string().as_str());
 
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -177,6 +206,10 @@ impl SqlWhereValueProvider for f32 {
 
         true
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for f64 {
@@ -192,6 +225,10 @@ impl SqlWhereValueProvider for f64 {
         }
         sql.push_str(self.to_string().as_str());
 
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -211,6 +248,10 @@ impl SqlWhereValueProvider for i16 {
 
         true
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for u32 {
@@ -226,6 +267,10 @@ impl SqlWhereValueProvider for u32 {
         }
         sql.push_str(self.to_string().as_str());
 
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -245,6 +290,10 @@ impl SqlWhereValueProvider for i32 {
 
         true
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for u64 {
@@ -262,6 +311,10 @@ impl SqlWhereValueProvider for u64 {
 
         true
     }
+
+    fn render_value(&self) -> bool {
+        true
+    }
 }
 
 impl SqlWhereValueProvider for i64 {
@@ -277,6 +330,10 @@ impl SqlWhereValueProvider for i64 {
         }
         sql.push_str(self.to_string().as_str());
 
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -301,6 +358,10 @@ impl SqlWhereValueProvider for crate::IsNull {
                 sql.push_str("NOT NULL");
             }
         }
+        true
+    }
+
+    fn render_value(&self) -> bool {
         true
     }
 }
@@ -339,6 +400,10 @@ impl<T: SqlWhereValueProvider> SqlWhereValueProvider for Vec<T> {
         sql.push(')');
 
         true
+    }
+
+    fn render_value(&self) -> bool {
+        self.len() > 0
     }
 }
 
@@ -385,5 +450,9 @@ impl SqlWhereValueProvider for BTreeMap<String, String> {
         }
 
         true
+    }
+
+    fn render_value(&self) -> bool {
+        self.len() > 0
     }
 }
