@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rust_extensions::slice_of_u8_utils::SliceOfU8Ext;
+use sql_core::sql_with_placeholders::*;
 use types_reader::{StructureSchema, TokensObject, TypeName};
 
 use crate::{struct_ext::StructPropertyExt, where_fields::WhereFields};
@@ -80,6 +80,10 @@ pub fn generate_where_raw_model<'s>(
         }
     }
 
+    if let Some(prev_raw_content) = prev_raw_content {
+        content_to_render.push(prev_raw_content);
+    }
+
     let impl_where_model = crate::render_impl::impl_sql_where_model(
         &type_name,
         {
@@ -97,53 +101,4 @@ pub fn generate_where_raw_model<'s>(
         #ast
         #impl_where_model
     })
-}
-
-fn scan_sql_for_placeholders<'s>(sql: &'s str) -> Vec<SqlTransformToken<'s>> {
-    let mut pos_from = 0usize;
-
-    let as_bytes = sql.as_bytes();
-
-    let mut tokens = Vec::new();
-
-    while let Some(place_holder_start_position) =
-        as_bytes.find_sequence_pos("${".as_bytes(), pos_from)
-    {
-        let content =
-            std::str::from_utf8(&as_bytes[pos_from..place_holder_start_position]).unwrap();
-
-        tokens.push(SqlTransformToken::RawContent(content));
-
-        let place_holder_end_position =
-            as_bytes.find_sequence_pos("}".as_bytes(), place_holder_start_position);
-
-        if place_holder_end_position.is_none() {
-            break;
-        }
-
-        let place_holder_end_position = place_holder_end_position.unwrap();
-
-        let field_name = std::str::from_utf8(
-            &as_bytes[place_holder_start_position + 2..place_holder_end_position],
-        )
-        .unwrap();
-
-        tokens.push(SqlTransformToken::PlaceHolder(field_name));
-
-        pos_from = place_holder_end_position + 1;
-    }
-
-    if pos_from < sql.len() {
-        let content = std::str::from_utf8(&as_bytes[pos_from..sql.len()]).unwrap();
-
-        tokens.push(SqlTransformToken::RawContent(content))
-    }
-
-    tokens
-}
-
-#[derive(Debug)]
-pub enum SqlTransformToken<'s> {
-    RawContent(&'s str),
-    PlaceHolder(&'s str),
 }
