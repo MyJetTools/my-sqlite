@@ -202,12 +202,12 @@ pub fn build_select<TSqlWhereModel: SqlWhereModel>(
         }
     }
 
-    if let Some(order_by_fields) = order_by_columns {
-        sql.push_str(order_by_fields);
-    }
-
     if let Some(group_by_fields) = group_by_columns {
         sql.push_str(group_by_fields);
+    }
+
+    if let Some(order_by_fields) = order_by_columns {
+        sql.push_str(order_by_fields);
     }
 
     if let Some(where_model) = where_model {
