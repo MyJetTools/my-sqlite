@@ -13,11 +13,16 @@ use crate::{
 
 pub struct SqlLiteConnection {
     pub client: Client,
+    debug: bool,
 }
 
 impl SqlLiteConnection {
-    pub async fn new(client: Client) -> Self {
-        Self { client }
+    pub async fn new(client: Client, debug: bool) -> Self {
+        Self { client, debug }
+    }
+
+    fn is_debug(&self) -> bool {
+        self.debug
     }
 
     pub async fn insert_db_entity<TEntity: SqlInsertModel>(
@@ -33,7 +38,7 @@ impl SqlLiteConnection {
             &mut UsedColumns::as_none(),
         );
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -53,7 +58,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }
@@ -80,7 +85,7 @@ impl SqlLiteConnection {
 
         let sql_data_spawned = sql_data.clone();
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -96,7 +101,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }
@@ -116,7 +121,7 @@ impl SqlLiteConnection {
 
         let sql_data_spawned = sql_data.clone();
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -132,7 +137,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }
@@ -158,7 +163,7 @@ impl SqlLiteConnection {
             &used_columns,
         ));
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -176,7 +181,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }
@@ -192,7 +197,7 @@ impl SqlLiteConnection {
     ) -> Result<(), SqlLiteError> {
         let sql_data = crate::sql::build_bulk_insert_or_update_sql(table_name, entities);
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -212,7 +217,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }
@@ -238,7 +243,7 @@ impl SqlLiteConnection {
             &used_columns,
         ));
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -256,7 +261,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }
@@ -285,7 +290,7 @@ impl SqlLiteConnection {
 
         let sql = Arc::new(sql);
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql);
         }
 
@@ -316,7 +321,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql);
             }
         }
@@ -348,7 +353,7 @@ impl SqlLiteConnection {
 
         let sql = Arc::new(sql);
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql);
         }
 
@@ -407,7 +412,7 @@ impl SqlLiteConnection {
         sql.push_str(" FROM ");
         sql.push_str(table_name);
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql);
         }
 
@@ -440,7 +445,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql);
             }
         }
@@ -457,7 +462,7 @@ impl SqlLiteConnection {
     ) -> Result<(), SqlLiteError> {
         let sql_data = where_model.build_delete_sql(table_name);
 
-        if std::env::var("DEBUG").is_ok() {
+        if self.is_debug() {
             println!("Sql: {}", sql_data.sql);
         }
 
@@ -477,7 +482,7 @@ impl SqlLiteConnection {
 
         if let Err(err) = &result {
             println!("Err: {}", err);
-            if std::env::var("DEBUG").is_ok() {
+            if self.is_debug() {
                 println!("Sql: {}", sql_data.sql);
             }
         }

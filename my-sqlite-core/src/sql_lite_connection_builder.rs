@@ -8,6 +8,7 @@ use crate::{table_schema::TableSchemaProvider, SqlLiteConnection, SqlLiteError};
 pub struct SqlLiteConnectionBuilder {
     path: StrOrString<'static>,
     create_table_sql: Vec<String>,
+    debug: bool,
 }
 
 impl SqlLiteConnectionBuilder {
@@ -15,7 +16,13 @@ impl SqlLiteConnectionBuilder {
         Self {
             path: path.into(),
             create_table_sql: Vec::with_capacity(4),
+            debug: false,
         }
+    }
+
+    pub fn debug(mut self, debug: bool) -> Self {
+        self.debug = debug;
+        self
     }
 
     pub fn create_table_if_no_exists<T: TableSchemaProvider>(mut self, table_name: &str) -> Self {
@@ -24,7 +31,12 @@ impl SqlLiteConnectionBuilder {
         self
     }
 
+    fn is_debug(&self) -> bool {
+        self.debug || std::env::var("DEBUG").is_ok()
+    }
+
     pub async fn build(self) -> Result<SqlLiteConnection, SqlLiteError> {
+        let debug = self.is_debug();
         let client = ClientBuilder::new()
             .path(self.path.as_str())
             .journal_mode(JournalMode::Off)
@@ -32,7 +44,7 @@ impl SqlLiteConnectionBuilder {
             .await
             .unwrap();
 
-        let result = SqlLiteConnection::new(client).await;
+        let result = SqlLiteConnection::new(client, debug).await;
 
         for create_table_sql in self.create_table_sql {
             let create_table_sql = Arc::new(create_table_sql);
@@ -45,7 +57,7 @@ impl SqlLiteConnectionBuilder {
                 .await;
 
             if let Err(err) = &result {
-                if std::env::var("DEBUG").is_ok() {
+                if debug {
                     println!("Sql:{}", create_table_sql.as_str());
                 }
 
