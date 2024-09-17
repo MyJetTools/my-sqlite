@@ -86,7 +86,7 @@ impl SqlWhereValueProvider for DateTimeAsMicroseconds {
 
                 if sql_type == "timestamp" {
                     sql.push('\'');
-                    sql.push_str(&self.to_rfc3339()[..26]);
+                    sql.push_str(&self.to_rfc3339()[..19]);
                     sql.push('\'');
                     return true;
                 }
