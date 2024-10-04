@@ -8,6 +8,7 @@ use crate::{table_schema::TableSchemaProvider, SqlLiteConnection, SqlLiteError};
 pub struct SqlLiteConnectionBuilder {
     path: StrOrString<'static>,
     create_table_sql: Vec<String>,
+
     debug: bool,
 }
 
@@ -28,6 +29,18 @@ impl SqlLiteConnectionBuilder {
     pub fn create_table_if_no_exists<T: TableSchemaProvider>(mut self, table_name: &str) -> Self {
         self.create_table_sql
             .push(crate::crate_table::generate_sql_request::<T>(table_name));
+
+        if let Some(indexes) = T::get_indexes() {
+            for (name, index_schema) in indexes {
+                self.create_table_sql
+                    .push(crate::crate_table::generate_create_index_sql(
+                        table_name,
+                        name.as_str(),
+                        index_schema,
+                    ));
+            }
+        }
+
         self
     }
 
