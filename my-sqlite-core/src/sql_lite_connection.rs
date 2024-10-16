@@ -490,6 +490,7 @@ impl SqlLiteConnection {
         Ok(())
     }
 
+    // Connection can not be reused after
     pub async fn close(&self) {
         let close_result = self.client.close().await;
 
