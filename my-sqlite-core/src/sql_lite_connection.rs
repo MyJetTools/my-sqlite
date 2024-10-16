@@ -489,4 +489,12 @@ impl SqlLiteConnection {
 
         Ok(())
     }
+
+    pub async fn close(self) {
+        let close_result = self.client.close().await;
+
+        if let Err(close_result) = close_result {
+            println!("Error closing sqlite connection: {}", close_result);
+        }
+    }
 }
