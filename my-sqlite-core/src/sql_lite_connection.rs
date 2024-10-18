@@ -26,7 +26,7 @@ impl SqlLiteConnection {
         self.debug
     }
 
-    pub async fn create_table_if_no_exists<T: TableSchemaProvider>(
+    pub async fn create_table_if_not_exists<T: TableSchemaProvider>(
         &self,
         table_name: &str,
     ) -> Result<(), SqlLiteError> {
