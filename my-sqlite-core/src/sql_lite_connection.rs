@@ -8,6 +8,7 @@ use crate::{
     sql_select::SelectEntity,
     sql_update::SqlUpdateModel,
     sql_where::SqlWhereModel,
+    table_schema::TableSchemaProvider,
     CountResult, DbRow, SqlLiteError,
 };
 
@@ -23,6 +24,33 @@ impl SqlLiteConnection {
 
     fn is_debug(&self) -> bool {
         self.debug
+    }
+
+    pub async fn create_table_if_no_exists<T: TableSchemaProvider>(
+        &self,
+        table_name: &str,
+    ) -> Result<(), SqlLiteError> {
+        let crate_table_sql = crate::crate_table::generate_sql_request::<T>(table_name);
+
+        self.client
+            .conn(move |connection| connection.execute(crate_table_sql.as_str(), []))
+            .await?;
+
+        if let Some(indexes) = T::get_indexes() {
+            for (name, index_schema) in indexes {
+                let index_sql = crate::crate_table::generate_create_index_sql(
+                    table_name,
+                    name.as_str(),
+                    index_schema,
+                );
+
+                self.client
+                    .conn(move |connection| connection.execute(index_sql.as_str(), []))
+                    .await?;
+            }
+        }
+
+        Ok(())
     }
 
     pub async fn insert_db_entity<TEntity: SqlInsertModel>(
