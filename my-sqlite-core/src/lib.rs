@@ -26,3 +26,6 @@ mod group_by_fields;
 pub use group_by_fields::*;
 mod count_result;
 pub use count_result::*;
+
+mod sqlite_query_stream;
+pub use sqlite_query_stream::*;

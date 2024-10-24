@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_sqlite::{rusqlite::types::FromSql, Client};
+use rust_extensions::StrOrString;
 
 use crate::{
     sql::{SelectBuilder, SqlValues, UsedColumns},
@@ -9,17 +10,20 @@ use crate::{
     sql_update::SqlUpdateModel,
     sql_where::SqlWhereModel,
     table_schema::TableSchemaProvider,
-    CountResult, DbRow, SqlLiteError,
+    CountResult, DbRow, SqlLiteError, SqliteQueryStream,
 };
 
 pub struct SqlLiteConnection {
-    pub client: Client,
+    pub client: Arc<Client>,
     debug: bool,
 }
 
 impl SqlLiteConnection {
     pub async fn new(client: Client, debug: bool) -> Self {
-        Self { client, debug }
+        Self {
+            client: Arc::new(client),
+            debug,
+        }
     }
 
     fn is_debug(&self) -> bool {
@@ -357,6 +361,41 @@ impl SqlLiteConnection {
         Ok(result?)
     }
 
+    pub async fn query_rows_as_stream<
+        TEntity: SelectEntity + Send + Sync + 'static,
+        TWhereModel: SqlWhereModel + Send + Sync + 'static,
+    >(
+        &self,
+        table_name: impl Into<StrOrString<'static>>,
+        where_model: Option<TWhereModel>,
+        #[cfg(feature = "with-logs-and-telemetry")] telemetry_context: Option<&MyTelemetryContext>,
+    ) -> SqliteQueryStream<TEntity> {
+        let select_builder = SelectBuilder::from_select_model::<TEntity>();
+
+        /*
+               let select_fields = TEntity::get_select_fields();
+
+               let mut sql = String::new();
+
+               let mut sql_values = SqlValues::new();
+
+               select_builder.build_select_sql(&mut sql, &mut sql_values, table_name, where_model);
+
+               let sql = Arc::new(sql);
+
+               if self.is_debug() {
+                   println!("Sql: {}", sql);
+               }
+
+        let sql_spawned = sql.clone();
+        */
+        SqliteQueryStream::new::<TWhereModel>(
+            self.client.clone(),
+            table_name.into(),
+            select_builder,
+            where_model,
+        )
+    }
     pub async fn query_single_row<
         TEntity: SelectEntity + Send + Sync + 'static,
         TWhereModel: SqlWhereModel,
