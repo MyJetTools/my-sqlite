@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_sqlite::{rusqlite::types::FromSql, Client};
+#[cfg(feature = "with-logs-and-telemetry")]
 use my_telemetry::MyTelemetryContext;
 use rust_extensions::StrOrString;
 

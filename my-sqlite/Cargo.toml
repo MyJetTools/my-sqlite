@@ -5,7 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
-default = []
+default = ["macros"]
 macros = ["dep:my-sqlite-macros"]
 debug-table-schema = ["my-sqlite-macros?/debug-table-schema"]
 with-telemetry = ["my-sqlite-core/with-logs-and-telemetry"]
