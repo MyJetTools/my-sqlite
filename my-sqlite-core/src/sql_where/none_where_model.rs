@@ -8,6 +8,10 @@ impl NoneWhereModel {
     pub fn new() -> Option<&'static Self> {
         None
     }
+
+    pub fn new_owned() -> Option<Self> {
+        None
+    }
 }
 
 impl SqlWhereModel for NoneWhereModel {

@@ -1,6 +1,6 @@
 [package]
 name = "my-sqlite-macros"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -12,9 +12,8 @@ debug-table-schema = []
 proc-macro = true
 
 [dependencies]
-types-reader = { tag = "0.5.0", git = "https://github.com/MyJetTools/types-reader.git" }
-rust-extensions = { tag = "0.1.4", git = "https://github.com/MyJetTools/rust-extensions.git" }
-sql-core = { tag = "0.1.0", git = "https://github.com/MyJetTools/sql-core.git" }
+types-reader = { tag = "0.5.1", git = "https://github.com/MyJetTools/types-reader.git" }
+sql-core = { tag = "0.1.1", git = "https://github.com/MyJetTools/sql-core.git" }
 
 syn = { version = "*", features = ["extra-traits"] }
 quote = "*"

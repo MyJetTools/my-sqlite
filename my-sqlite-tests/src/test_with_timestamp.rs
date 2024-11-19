@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use my_sqlite::macros::*;
-use rust_extensions::date_time::DateTimeAsMicroseconds;
+use types_reader::rust_extensions::date_time::DateTimeAsMicroseconds;
 
 #[derive(SelectDbEntity, InsertDbEntity, UpdateDbEntity, TableSchema)]
 struct TestEntity {
@@ -17,7 +17,7 @@ struct TestEntity {
 #[cfg(test)]
 mod tests {
     use my_sqlite::SqlLiteConnectionBuilder;
-    use rust_extensions::date_time::DateTimeAsMicroseconds;
+    use types_reader::rust_extensions::date_time::DateTimeAsMicroseconds;
 
     use super::*;
 
