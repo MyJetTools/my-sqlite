@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use async_sqlite::{rusqlite::types::FromSql, Client};
+use my_telemetry::MyTelemetryContext;
 use rust_extensions::StrOrString;
 
 use crate::{
