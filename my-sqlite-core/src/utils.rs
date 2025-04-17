@@ -37,5 +37,5 @@ pub fn get_case_and_model<'s>(
 
 pub fn fill_adjusted_column_name(column_name: &str, out: &mut String) {
     out.push_str(column_name);
-    out.push_str(".transformed");
+    out.push_str("_transformed");
 }
