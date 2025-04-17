@@ -11,6 +11,7 @@ mod render_impl;
 mod struct_ext;
 mod struct_schema;
 mod table_schema;
+mod utils;
 mod where_fields;
 mod where_value_provider;
 

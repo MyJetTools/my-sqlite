@@ -29,14 +29,14 @@ pub fn generate(ast: &syn::DeriveInput) -> Result<TokenStream, syn::Error> {
     let result = quote! {
         impl my_sqlite::sql_select::SelectEntity for #struct_name{
 
+            const SELECT_FIELDS: &'static [&'static str] = &[#(#fn_get_fields)*];
+
             fn fill_select_fields(sql: &mut my_sqlite::sql::SelectBuilder) {
                 use my_sqlite::sql_select::SelectValueProvider;
                 #(#fn_select_fields)*
             }
 
-            fn get_select_fields()-> &'static [&'static str] {
-                &[#(#fn_get_fields)*]
-            }
+
 
             fn get_order_by_fields() -> Option<&'static str>{
                 #orders_by_fields

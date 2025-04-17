@@ -10,6 +10,7 @@ mod sql_where_value_provider;
 pub use sql_where_value_provider::*;
 mod is_null;
 pub use is_null::*;
+pub mod utils;
 
 mod db_row;
 pub mod sql_select;

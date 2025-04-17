@@ -12,3 +12,5 @@ pub use select_entity::*;
 pub use select_part_value::*;
 pub use select_with_params::*;
 pub use to_sql_string::*;
+mod db_column_name;
+pub use db_column_name::*;

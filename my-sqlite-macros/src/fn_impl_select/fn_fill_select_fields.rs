@@ -23,7 +23,10 @@ pub fn fn_fill_select_fields<'s>(
             });
         } else {
             let db_column_name = prop.get_db_column_name()?;
-            let db_column_name = db_column_name.as_str();
+            let db_row_column_name = db_column_name.get_db_row_column_name();
+            let db_row_column_name = db_row_column_name.as_str();
+
+            let db_column_name = db_column_name.to_column_name_token();
 
             let metadata = prop.get_field_metadata()?;
 
@@ -36,7 +39,6 @@ pub fn fn_fill_select_fields<'s>(
                     }
                     .into(),
                 );
-                result_2.push(quote!(#db_column_name,));
             } else {
                 let type_ident = prop.ty.get_token_stream_with_generics();
                 result.push(
@@ -45,8 +47,9 @@ pub fn fn_fill_select_fields<'s>(
                     }
                     .into(),
                 );
-                result_2.push(quote!(#db_column_name,));
             }
+
+            result_2.push(quote!(#db_row_column_name,));
         }
     }
 

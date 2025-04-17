@@ -7,10 +7,11 @@ pub trait BulkSelectEntity {
 }
 
 pub trait SelectEntity {
+    const SELECT_FIELDS: &'static [&'static str];
     fn from(row: &DbRow) -> Self;
     fn fill_select_fields(select_builder: &mut SelectBuilder);
 
-    fn get_select_fields() -> &'static [&'static str];
+    //fn get_select_fields() -> &'static [&'static str];
 
     fn get_order_by_fields() -> Option<&'static str>;
     fn get_group_by_fields() -> Option<&'static str>;

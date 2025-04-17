@@ -314,8 +314,6 @@ impl SqlLiteConnection {
     ) -> Result<Vec<TEntity>, SqlLiteError> {
         let select_builder = SelectBuilder::from_select_model::<TEntity>();
 
-        let select_fields = TEntity::get_select_fields();
-
         let mut sql = String::new();
 
         let mut sql_values = SqlValues::new();
@@ -337,7 +335,7 @@ impl SqlLiteConnection {
 
                 let response =
                     stmt.query_map(sql_values.get_params_to_invoke().as_slice(), |row| {
-                        let db_row = DbRow::new(row, &select_fields);
+                        let db_row = DbRow::new(row, TEntity::SELECT_FIELDS);
                         TEntity::from(&db_row);
                         Ok(TEntity::from(&db_row))
                     })?;
@@ -409,8 +407,6 @@ impl SqlLiteConnection {
     ) -> Result<Option<TEntity>, SqlLiteError> {
         let select_builder = SelectBuilder::from_select_model::<TEntity>();
 
-        let select_fields = TEntity::get_select_fields();
-
         let mut sql = String::new();
 
         #[cfg(test)]
@@ -435,7 +431,7 @@ impl SqlLiteConnection {
                     &sql_spawned,
                     sql_values.get_params_to_invoke().as_slice(),
                     |row| {
-                        let db_row = DbRow::new(row, &select_fields);
+                        let db_row = DbRow::new(row, TEntity::SELECT_FIELDS);
                         TEntity::from(&db_row);
                         Ok(TEntity::from(&db_row))
                     },

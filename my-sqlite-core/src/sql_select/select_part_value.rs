@@ -7,10 +7,12 @@ use crate::{
     SqlValueMetadata,
 };
 
+use super::DbColumnName;
+
 pub trait SelectValueProvider {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         metadata: &Option<SqlValueMetadata>,
     );
 }
@@ -18,7 +20,7 @@ pub trait SelectValueProvider {
 impl SelectValueProvider for String {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -28,7 +30,7 @@ impl SelectValueProvider for String {
 impl<'s> SelectValueProvider for &'s str {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -38,7 +40,7 @@ impl<'s> SelectValueProvider for &'s str {
 impl SelectValueProvider for usize {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -48,7 +50,7 @@ impl SelectValueProvider for usize {
 impl SelectValueProvider for i64 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -58,7 +60,7 @@ impl SelectValueProvider for i64 {
 impl SelectValueProvider for u64 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -68,7 +70,7 @@ impl SelectValueProvider for u64 {
 impl SelectValueProvider for i32 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -78,7 +80,7 @@ impl SelectValueProvider for i32 {
 impl SelectValueProvider for u32 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -88,7 +90,7 @@ impl SelectValueProvider for u32 {
 impl SelectValueProvider for i16 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -98,7 +100,7 @@ impl SelectValueProvider for i16 {
 impl SelectValueProvider for u16 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -108,7 +110,7 @@ impl SelectValueProvider for u16 {
 impl SelectValueProvider for i8 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -118,7 +120,7 @@ impl SelectValueProvider for i8 {
 impl SelectValueProvider for u8 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -128,7 +130,7 @@ impl SelectValueProvider for u8 {
 impl SelectValueProvider for f64 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -138,7 +140,7 @@ impl SelectValueProvider for f64 {
 impl SelectValueProvider for f32 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -148,7 +150,7 @@ impl SelectValueProvider for f32 {
 impl SelectValueProvider for bool {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Field(field_name));
@@ -158,7 +160,7 @@ impl SelectValueProvider for bool {
 impl<T> SelectValueProvider for Vec<T> {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Json(field_name));
@@ -168,7 +170,7 @@ impl<T> SelectValueProvider for Vec<T> {
 impl<TKey, TValue> SelectValueProvider for HashMap<TKey, TValue> {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Json(field_name));
@@ -178,7 +180,7 @@ impl<TKey, TValue> SelectValueProvider for HashMap<TKey, TValue> {
 impl<TKey, TValue> SelectValueProvider for BTreeMap<TKey, TValue> {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) {
         sql.push(SelectFieldValue::Json(field_name));
@@ -188,7 +190,7 @@ impl<TKey, TValue> SelectValueProvider for BTreeMap<TKey, TValue> {
 impl SelectValueProvider for DateTimeAsMicroseconds {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         metadata: &Option<SqlValueMetadata>,
     ) {
         if let Some(metadata) = metadata {

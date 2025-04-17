@@ -1,14 +1,34 @@
 use proc_macro2::TokenStream;
-use types_reader::{MacrosAttribute, PropertyType, StructProperty};
+use types_reader::{rust_extensions::StrOrString, MacrosAttribute, PropertyType, StructProperty};
 
 use crate::attributes::*;
 
 pub struct DbColumnName<'s> {
     pub attr: Option<DbColumnNameAttribute<'s>>,
     pub property_name: &'s str,
+    pub force_cast_db_type: bool,
+    pub ty: &'s PropertyType<'s>,
 }
 
-impl DbColumnName<'_> {
+impl<'s> DbColumnName<'s> {
+    pub fn to_column_name_token(&'s self) -> proc_macro2::TokenStream {
+        let db_column_name = match self.attr.as_ref() {
+            Some(attr) => attr.name,
+            None => self.property_name,
+        };
+
+        let filed_name = self.property_name;
+
+        let force_cast_db_type = self.force_cast_db_type;
+        quote::quote! {
+            my_sqlite::sql_select::DbColumnName{
+                field_name: #filed_name,
+                db_column_name: #db_column_name,
+                force_cast_db_type: #force_cast_db_type
+            }
+        }
+    }
+
     pub fn as_str(&self) -> &str {
         if let Some(attr) = &self.attr {
             return attr.name;
@@ -19,6 +39,18 @@ impl DbColumnName<'_> {
 
     pub fn to_string(&self) -> String {
         self.as_str().to_string()
+    }
+
+    pub fn get_db_row_column_name(&'s self) -> StrOrString<'s> {
+        if let Some(attr) = &self.attr {
+            return attr.name.into();
+        }
+
+        if crate::utils::is_type_transformed(self.ty) {
+            return format!("{}.transformed", self.property_name).into();
+        }
+
+        self.property_name.into()
     }
 
     pub fn get_overridden_column_name(&self) -> DbColumnNameAttribute {
@@ -42,14 +74,10 @@ pub trait StructPropertyExt<'s> {
 
     fn get_db_column_name(&self) -> Result<DbColumnName, syn::Error>;
 
-    fn has_json_attr(&self) -> bool;
-
     fn has_ignore_attr(&self) -> bool;
     fn has_ignore_if_none_attr(&self) -> bool;
 
     fn is_line_no(&self) -> bool;
-
-    fn sql_value_to_mask(&self) -> bool;
 
     fn get_field_metadata(&self) -> Result<proc_macro2::TokenStream, syn::Error>;
 
@@ -62,6 +90,8 @@ pub trait StructPropertyExt<'s> {
     fn get_default_value(&self) -> Result<Option<DefaultValue>, syn::Error>;
 
     fn get_sql_type_as_token_stream(&self) -> Result<proc_macro2::TokenStream, syn::Error>;
+
+    fn get_force_cast_db_type(&self) -> bool;
 
     fn fill_attributes(
         &self,
@@ -153,6 +183,10 @@ pub trait StructPropertyExt<'s> {
 }
 
 impl<'s> StructPropertyExt<'s> for StructProperty<'s> {
+    fn get_force_cast_db_type(&self) -> bool {
+        self.attrs.try_get_attr("force_cast_db_type").is_some()
+    }
+
     fn get_field_name_ident(&self) -> &syn::Ident {
         self.get_field_name_ident()
     }
@@ -161,30 +195,19 @@ impl<'s> StructPropertyExt<'s> for StructProperty<'s> {
         &self.ty
     }
 
-    fn sql_value_to_mask(&self) -> bool {
-        if self.ty.is_string() {
-            return true;
-        }
-
-        if let PropertyType::OptionOf(sub_ty) = &self.ty {
-            if sub_ty.is_string() {
-                return true;
-            }
-        }
-
-        false
-    }
-
     fn is_primary_key(&self) -> bool {
         self.attrs.has_attr(PrimaryKeyAttribute::NAME)
     }
 
     fn get_db_column_name(&self) -> Result<DbColumnName, syn::Error> {
         let attr: Option<DbColumnNameAttribute> = self.try_get_attribute()?;
+        let force_cast_db_type = self.get_force_cast_db_type();
 
         let result = DbColumnName {
             attr,
             property_name: &self.name,
+            force_cast_db_type,
+            ty: &self.ty,
         };
 
         Ok(result)
@@ -200,10 +223,6 @@ impl<'s> StructPropertyExt<'s> for StructProperty<'s> {
 
     fn has_ignore_table_column(&self) -> bool {
         self.attrs.has_attr(IgnoreTableColumnAttribute::NAME)
-    }
-
-    fn has_json_attr(&self) -> bool {
-        self.attrs.has_attr(JsonAttribute::NAME)
     }
 
     fn is_line_no(&self) -> bool {

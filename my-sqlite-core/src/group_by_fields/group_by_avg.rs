@@ -2,7 +2,7 @@ use async_sqlite::rusqlite::types::FromSql;
 
 use crate::{
     sql::SelectBuilder,
-    sql_select::{FromDbRow, SelectValueProvider},
+    sql_select::{DbColumnName, FromDbRow, SelectValueProvider},
     GroupByFieldType, SqlValueMetadata,
 };
 
@@ -20,7 +20,7 @@ impl<T: std::fmt::Debug + GroupByFieldType + Send + Sync + 'static> SelectValueP
 {
     fn fill_select_part(
         sql: &mut SelectBuilder,
-        field_name: &'static str,
+        field_name: DbColumnName,
         metadata: &Option<SqlValueMetadata>,
     ) {
         let sql_type = if let Some(metadata) = metadata {
@@ -35,7 +35,7 @@ impl<T: std::fmt::Debug + GroupByFieldType + Send + Sync + 'static> SelectValueP
 
         sql.push(crate::sql::SelectFieldValue::GroupByField {
             field_name,
-            statement: format!("AVG({field_name})::{}", sql_type).into(),
+            statement: format!("AVG({})::{}", field_name.db_column_name, sql_type).into(),
         });
     }
 }
@@ -45,19 +45,19 @@ impl<'s, T: std::fmt::Debug + Copy + FromSql + Send + Sync + 'static> FromDbRow<
 {
     fn from_db_row(
         row: &'s crate::DbRow,
-        name: &str,
+        column_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) -> GroupByAvg<T> {
-        let value: T = row.get(name);
+        let value: T = row.get(column_name.db_column_name);
         GroupByAvg(value)
     }
 
     fn from_db_row_opt(
         row: &'s crate::DbRow,
-        name: &str,
+        column_name: DbColumnName,
         _metadata: &Option<SqlValueMetadata>,
     ) -> Option<GroupByAvg<T>> {
-        let result: Option<T> = row.get(name);
+        let result: Option<T> = row.get(column_name.db_column_name);
         Some(GroupByAvg(result?))
     }
 }

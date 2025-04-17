@@ -52,7 +52,6 @@ async fn select_builder_stream<
     where_model: Option<TWhereModel>,
     tx: tokio::sync::mpsc::Sender<Result<TEntity, async_sqlite::rusqlite::Error>>,
 ) {
-    let select_fields = TEntity::get_select_fields();
     let mut sql = String::new();
 
     let mut sql_values = SqlValues::new();
@@ -73,7 +72,7 @@ async fn select_builder_stream<
             let mut stmt = conn.prepare(&sql_spawned)?;
 
             let response = stmt.query_map(sql_values.get_params_to_invoke().as_slice(), |row| {
-                let db_row = DbRow::new(row, &select_fields);
+                let db_row = DbRow::new(row, TEntity::SELECT_FIELDS);
                 TEntity::from(&db_row);
                 Ok(TEntity::from(&db_row))
             })?;

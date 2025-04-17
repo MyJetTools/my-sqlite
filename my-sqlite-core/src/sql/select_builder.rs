@@ -1,18 +1,21 @@
 use rust_extensions::StrOrString;
 
-use crate::{sql_select::SelectEntity, sql_where::SqlWhereModel};
+use crate::{
+    sql_select::{DbColumnName, SelectEntity},
+    sql_where::SqlWhereModel,
+};
 
 use super::{SqlData, SqlValues};
 
 pub enum SelectFieldValue {
     LineNo(usize),
-    Field(&'static str),
-    Json(&'static str),
-    DateTimeAsBigint(&'static str),
-    DateTimeAsTimestamp(&'static str),
+    Field(DbColumnName),
+    Json(DbColumnName),
+    DateTimeAsBigint(DbColumnName),
+    DateTimeAsTimestamp(DbColumnName),
     GroupByField {
         statement: StrOrString<'static>,
-        field_name: &'static str,
+        field_name: DbColumnName,
     },
 }
 
@@ -20,79 +23,79 @@ impl SelectFieldValue {
     pub fn unwrap_as_line_no(&self) -> usize {
         match self {
             SelectFieldValue::LineNo(line_no) => *line_no,
-            SelectFieldValue::Field(field_name) => panic!("Value is Field: {}", field_name),
-            SelectFieldValue::Json(field_name) => panic!("Value is Json: {}", field_name),
+            SelectFieldValue::Field(field_name) => panic!("Value is Field: {:?}", field_name),
+            SelectFieldValue::Json(field_name) => panic!("Value is Json: {:?}", field_name),
             SelectFieldValue::DateTimeAsBigint(field_name) => {
-                panic!("Value is DateTimeAsBigint: {}", field_name)
+                panic!("Value is DateTimeAsBigint: {:?}", field_name)
             }
             SelectFieldValue::DateTimeAsTimestamp(field_name) => {
-                panic!("Value is DateTimeAsTimestamp: {}", field_name)
+                panic!("Value is DateTimeAsTimestamp: {:?}", field_name)
             }
             SelectFieldValue::GroupByField { field_name, .. } => {
-                panic!("Value is GroupByField: {}", field_name)
+                panic!("Value is GroupByField: {:?}", field_name)
             }
         }
     }
 
-    pub fn unwrap_as_field(&self) -> &'static str {
+    pub fn unwrap_as_field(&self) -> &DbColumnName {
         match self {
             SelectFieldValue::LineNo(line_no) => panic!("Value is LineNo: {}", line_no),
             SelectFieldValue::Field(field_name) => field_name,
-            SelectFieldValue::Json(field_name) => panic!("Value is Json: {}", field_name),
+            SelectFieldValue::Json(field_name) => panic!("Value is Json: {:?}", field_name),
             SelectFieldValue::DateTimeAsBigint(field_name) => {
-                panic!("Value is DateTimeAsBigint: {}", field_name)
+                panic!("Value is DateTimeAsBigint: {:?}", field_name)
             }
             SelectFieldValue::DateTimeAsTimestamp(field_name) => {
-                panic!("Value is DateTimeAsTimestamp: {}", field_name)
+                panic!("Value is DateTimeAsTimestamp: {:?}", field_name)
             }
             SelectFieldValue::GroupByField { field_name, .. } => {
-                panic!("Value is GroupByField: {}", field_name)
+                panic!("Value is GroupByField: {:?}", field_name)
             }
         }
     }
 
-    pub fn unwrap_as_json(&self) -> &'static str {
+    pub fn unwrap_as_json(&self) -> &DbColumnName {
         match self {
             SelectFieldValue::LineNo(line_no) => panic!("Value is LineNo: {}", line_no),
-            SelectFieldValue::Field(field_name) => panic!("Value is Field: {}", field_name),
+            SelectFieldValue::Field(field_name) => panic!("Value is Field: {:?}", field_name),
             SelectFieldValue::Json(field_name) => field_name,
             SelectFieldValue::DateTimeAsBigint(field_name) => {
-                panic!("Value is DateTimeAsBigint: {}", field_name)
+                panic!("Value is DateTimeAsBigint: {:?}", field_name)
             }
             SelectFieldValue::DateTimeAsTimestamp(field_name) => {
-                panic!("Value is DateTimeAsTimestamp: {}", field_name)
+                panic!("Value is DateTimeAsTimestamp: {:?}", field_name)
             }
             SelectFieldValue::GroupByField { field_name, .. } => {
-                panic!("Value is GroupByField: {}", field_name)
+                panic!("Value is GroupByField: {:?}", field_name)
             }
         }
     }
 
-    pub fn unwrap_as_date_time_as_bigint(&self) -> &'static str {
+    pub fn unwrap_as_date_time_as_bigint(&self) -> &DbColumnName {
         match self {
             SelectFieldValue::LineNo(line_no) => panic!("Value is LineNo: {}", line_no),
-            SelectFieldValue::Field(field_name) => panic!("Value is Field: {}", field_name),
-            SelectFieldValue::Json(field_name) => panic!("Value is Json: {}", field_name),
+            SelectFieldValue::Field(field_name) => panic!("Value is Field: {:?}", field_name),
+            SelectFieldValue::Json(field_name) => panic!("Value is Json: {:?}", field_name),
             SelectFieldValue::DateTimeAsBigint(field_name) => field_name,
             SelectFieldValue::DateTimeAsTimestamp(field_name) => {
-                panic!("Value is DateTimeAsTimestamp: {}", field_name)
+                panic!("Value is DateTimeAsTimestamp: {:?}", field_name)
             }
             SelectFieldValue::GroupByField { field_name, .. } => {
-                panic!("Value is GroupByField: {}", field_name)
+                panic!("Value is GroupByField: {:?}", field_name)
             }
         }
     }
 
-    pub fn unwrap_as_date_time_as_timestamp(&self) -> &'static str {
+    pub fn unwrap_as_date_time_as_timestamp(&self) -> &DbColumnName {
         match self {
             SelectFieldValue::LineNo(line_no) => panic!("Value is LineNo: {}", line_no),
-            SelectFieldValue::Field(field_name) => panic!("Value is Field: {}", field_name),
-            SelectFieldValue::Json(field_name) => panic!("Value is Json: {}", field_name),
+            SelectFieldValue::Field(field_name) => panic!("Value is Field: {:?}", field_name),
+            SelectFieldValue::Json(field_name) => panic!("Value is Json: {:?}", field_name),
             SelectFieldValue::DateTimeAsBigint(field_name) => {
-                panic!("Value is DateTimeAsBigint: {}", field_name)
+                panic!("Value is DateTimeAsBigint: {:?}", field_name)
             }
             SelectFieldValue::GroupByField { field_name, .. } => {
-                panic!("Value is GroupByField: {}", field_name)
+                panic!("Value is GroupByField: {:?}", field_name)
             }
             SelectFieldValue::DateTimeAsTimestamp(field_name) => field_name,
         }
@@ -224,24 +227,24 @@ pub fn fill_select_fields(sql: &mut String, items: &[SelectFieldValue]) {
 
         match value {
             SelectFieldValue::Field(field_name) => {
-                sql.push_str(field_name);
+                sql.push_str(field_name.db_column_name);
             }
             SelectFieldValue::Json(field_name) => {
                 sql.push_str("cast(");
-                sql.push_str(field_name);
+                sql.push_str(field_name.db_column_name);
                 sql.push_str(" as text) as \"");
-                sql.push_str(field_name);
+                crate::utils::fill_adjusted_column_name(field_name.db_column_name, sql);
                 sql.push('"');
             }
             SelectFieldValue::DateTimeAsTimestamp(field_name) => {
                 sql.push_str("cast(");
-                sql.push_str(field_name);
+                sql.push_str(field_name.db_column_name);
                 sql.push_str(" as text) as \"");
-                sql.push_str(field_name);
+                crate::utils::fill_adjusted_column_name(field_name.db_column_name, sql);
                 sql.push('"');
             }
             SelectFieldValue::DateTimeAsBigint(field_name) => {
-                sql.push_str(field_name);
+                sql.push_str(field_name.db_column_name);
             }
             SelectFieldValue::LineNo(line_no) => {
                 sql.push_str(format!("{}::int as \"line_no\"", line_no).as_str());
@@ -250,7 +253,9 @@ pub fn fill_select_fields(sql: &mut String, items: &[SelectFieldValue]) {
                 field_name,
                 statement,
             } => {
-                sql.push_str(format!("{} as \"{}\"", statement.as_str(), field_name).as_str());
+                sql.push_str(
+                    format!("{} as \"{}\"", statement.as_str(), field_name.field_name).as_str(),
+                );
             }
         }
 
