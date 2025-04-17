@@ -14,6 +14,7 @@ pub fn generate_as_string(ast: &syn::DeriveInput) -> Result<proc_macro::TokenStr
 
     let default_value_reading = super::utils::get_default_value( enum_cases.as_slice())?;
 
+    let db_field_type = crate::utils::get_column_type_as_parameter();
     let impl_where_value_provider = crate::where_value_provider::render_where_value_provider(enum_name, ||{
         let operator_check = crate::where_value_provider::render_standard_operator_check("=");
         quote::quote!{
@@ -46,7 +47,7 @@ pub fn generate_as_string(ast: &syn::DeriveInput) -> Result<proc_macro::TokenStr
                 }
             }
 
-            pub fn fill_select_part(sql: &mut my_sqlite::sql::SelectBuilder, field_name: my_sqlite::sql_select::DbColumnName, metadata: &Option<my_sqlite::SqlValueMetadata>) {
+            pub fn fill_select_part(sql: &mut my_sqlite::sql::SelectBuilder, field_name: #db_field_type, metadata: &Option<my_sqlite::SqlValueMetadata>) {
                 sql.push(my_sqlite::sql::SelectFieldValue::Field(field_name));
             }
         }
@@ -66,13 +67,13 @@ pub fn generate_as_string(ast: &syn::DeriveInput) -> Result<proc_macro::TokenStr
         #impl_where_value_provider
 
         impl<'s> my_sqlite::sql_select::FromDbRow<'s, #enum_name> for #enum_name{
-            fn from_db_row(row: &'s my_sqlite::DbRow, name: &str, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Self{
-                let result: String = row.get(name);
+            fn from_db_row(row: &'s my_sqlite::DbRow,  field_name: #db_field_type, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Self{
+                let result: String = row.get(field_name.db_column_name);
                 Self::from_str(result.as_str())
             }
 
-            fn from_db_row_opt(row: &'s my_sqlite::DbRow, name: &str, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Option<Self>{
-                let result: Option<String> = row.get(name);
+            fn from_db_row_opt(row: &'s my_sqlite::DbRow,  field_name: #db_field_type,  metadata: &Option<my_sqlite::SqlValueMetadata>) -> Option<Self>{
+                let result: Option<String> = row.get(field_name.db_column_name);
                 let result = result?;
                 Some(Self::from_str(result.as_str()))
             }

@@ -7,3 +7,7 @@ pub fn is_type_transformed(tp: &types_reader::PropertyType) -> bool {
         _ => false,
     }
 }
+
+pub fn get_column_type_as_parameter() -> proc_macro2::TokenStream {
+    quote::quote! { my_sqlite::sql_select::DbColumnName  }
+}

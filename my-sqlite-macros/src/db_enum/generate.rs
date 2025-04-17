@@ -107,6 +107,8 @@ pub fn generate(
     });
     
 
+    let db_field_type = crate::utils::get_column_type_as_parameter();
+
     let result = quote! {
 
         impl #enum_name{
@@ -152,13 +154,13 @@ pub fn generate(
         #impl_where_value_provider
 
         impl<'s> my_sqlite::sql_select::FromDbRow<'s, #enum_name> for #enum_name{
-            fn from_db_row(row: &'s my_sqlite::DbRow, name: &str, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Self{
-                let result: #sql_db_type = row.get(name);
+            fn from_db_row(row: &'s my_sqlite::DbRow, column_name: #db_field_type,  metadata: &Option<my_sqlite::SqlValueMetadata>) -> Self{
+                let result: #sql_db_type = row.get(field_name.db_column_name);
                 #from_db_result
             }
 
-            fn from_db_row_opt(row: &'s my_sqlite::DbRow, name: &str, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Option<Self>{
-                let result: Option<#sql_db_type> = row.get(name);
+            fn from_db_row_opt(row: &'s my_sqlite::DbRow, column_name: #db_field_type, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Option<Self>{
+                let result: Option<#sql_db_type> = row.get(field_name.db_column_name);
                 let result = result?;
                 Some(#from_db_result)
             }

@@ -17,6 +17,7 @@ pub fn generate_as_string_with_model(ast: &syn::DeriveInput) -> Result<proc_macr
 
     let select_part = super::utils::render_select_part_as_json();
 
+    let db_field_type = crate::utils::get_column_type_as_parameter();
 
     let result = quote! {
 
@@ -44,13 +45,13 @@ pub fn generate_as_string_with_model(ast: &syn::DeriveInput) -> Result<proc_macr
         }
 
             impl<'s> my_sqlite::sql_select::FromDbRow<'s, #enum_name> for #enum_name{
-                fn from_db_row(row: &'s my_sqlite::DbRow, name: &str, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Self{
-                    let value: String = row.get(name);
+                fn from_db_row(row: &'s my_sqlite::DbRow, field_name: #db_field_type,  metadata: &Option<my_sqlite::SqlValueMetadata>) -> Self{
+                    let value: String = row.get(field_name.db_column_name);
                     Self::from_str(value.as_str())
                 }
 
-                fn from_db_row_opt(row: &'s my_sqlite::DbRow, name: &str, metadata: &Option<my_sqlite::SqlValueMetadata>) -> Option<Self>{
-                    let value: Option<String> = row.get(name);
+                fn from_db_row_opt(row: &'s my_sqlite::DbRow, field_name: #db_field_type,  metadata: &Option<my_sqlite::SqlValueMetadata>) -> Option<Self>{
+                    let value: Option<String> = row.get(field_name.db_column_name);
                     let value = value?;
 
                     Some(Self::from_str(value.as_str()))
