@@ -47,7 +47,7 @@ impl<'s> DbColumnName<'s> {
         }
 
         if crate::utils::is_type_transformed(self.ty) {
-            return format!("{}_transformed", self.property_name).into();
+            return format!("{}.transformed", self.property_name).into();
         }
 
         self.property_name.into()
