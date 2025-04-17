@@ -12,7 +12,7 @@ pub fn implement_select_value_provider(
         quote!(my_sqlite::sql_select::SelectValueProvider),
         || {
             quote::quote! {
-                fn fill_select_part(sql: &mut my_sqlite::sql::SelectBuilder, field_name: &'static str, metadata: &Option<my_sqlite::SqlValueMetadata>) {
+                fn fill_select_part(sql: &mut my_sqlite::sql::SelectBuilder, field_name: my_sqlite::sql_select::DbColumnName, metadata: &Option<my_sqlite::SqlValueMetadata>) {
                     #content
                 }
             }

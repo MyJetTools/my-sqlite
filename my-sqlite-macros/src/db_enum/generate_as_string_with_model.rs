@@ -38,7 +38,7 @@ pub fn generate_as_string_with_model(ast: &syn::DeriveInput) -> Result<proc_macr
                 }
             }
 
-            pub fn fill_select_part(sql: &mut my_sqlite::sql::SelectBuilder, field_name: &'static str, metadata: &Option<my_sqlite::SqlValueMetadata>) {
+            pub fn fill_select_part(sql: &mut my_sqlite::sql::SelectBuilder, field_name: my_sqlite::sql_select::DbColumnName, metadata: &Option<my_sqlite::SqlValueMetadata>) {
                 #select_part
             }
         }
